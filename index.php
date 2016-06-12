@@ -4,53 +4,57 @@
  * Description: درگاه پرداخت زرین‌پال برای افزونه Paid Memberships Pro
  * Author: Masoud Amini
  * Version: 1.0
- * License: GPL v2.0
+ * License: GPL v2.0.
  */
 //load classes init method
 add_action('plugins_loaded', 'load_zarinpal_pmpro_class', 11);
-add_action('plugins_loaded', array('PMProGateway_Zarinpal', 'init'), 12);
+add_action('plugins_loaded', ['PMProGateway_Zarinpal', 'init'], 12);
 
-function load_zarinpal_pmpro_class() {
+function load_zarinpal_pmpro_class()
+{
     if (class_exists('PMProGateway')) {
-
-        class PMProGateway_Zarinpal extends PMProGateway {
-
-            function PMProGateway_Zarinpal($gateway = NULL) {
+        class PMProGateway_Zarinpal extends PMProGateway
+        {
+            public function PMProGateway_Zarinpal($gateway = null)
+            {
                 $this->gateway = $gateway;
-                $this->gateway_environment = pmpro_getOption("gateway_environment");
+                $this->gateway_environment = pmpro_getOption('gateway_environment');
 
                 return $this->gateway;
             }
 
-            static function init() {
+            public static function init()
+            {
                 //make sure Stripe is a gateway option
-                add_filter('pmpro_gateways', array('PMProGateway_Zarinpal', 'pmpro_gateways'));
+                add_filter('pmpro_gateways', ['PMProGateway_Zarinpal', 'pmpro_gateways']);
 
                 //add fields to payment settings
-                add_filter('pmpro_payment_options', array('PMProGateway_Zarinpal', 'pmpro_payment_options'));
-                add_filter('pmpro_payment_option_fields', array('PMProGateway_Zarinpal', 'pmpro_payment_option_fields'), 10, 2);
-                $gateway = pmpro_getOption("gateway");
+                add_filter('pmpro_payment_options', ['PMProGateway_Zarinpal', 'pmpro_payment_options']);
+                add_filter('pmpro_payment_option_fields', ['PMProGateway_Zarinpal', 'pmpro_payment_option_fields'], 10, 2);
+                $gateway = pmpro_getOption('gateway');
 
-                if ($gateway == "zarinpal") {
-                    add_filter('pmpro_checkout_before_change_membership_level', array('PMProGateway_Zarinpal', 'pmpro_checkout_before_change_membership_level'), 10, 2);
+                if ($gateway == 'zarinpal') {
+                    add_filter('pmpro_checkout_before_change_membership_level', ['PMProGateway_Zarinpal', 'pmpro_checkout_before_change_membership_level'], 10, 2);
                     add_filter('pmpro_include_billing_address_fields', '__return_false');
                     add_filter('pmpro_include_payment_information_fields', '__return_false');
-                    add_filter('pmpro_required_billing_fields', array('PMProGateway_Zarinpal', 'pmpro_required_billing_fields'));
+                    add_filter('pmpro_required_billing_fields', ['PMProGateway_Zarinpal', 'pmpro_required_billing_fields']);
                 }
 
-                add_action('wp_ajax_nopriv_zarinpal-ins', array('PMProGateway_Zarinpal', 'pmpro_wp_ajax_zarinpal_ins'));
-                add_action('wp_ajax_zarinpal-ins', array('PMProGateway_Zarinpal', 'pmpro_wp_ajax_zarinpal_ins'));
+                add_action('wp_ajax_nopriv_zarinpal-ins', ['PMProGateway_Zarinpal', 'pmpro_wp_ajax_zarinpal_ins']);
+                add_action('wp_ajax_zarinpal-ins', ['PMProGateway_Zarinpal', 'pmpro_wp_ajax_zarinpal_ins']);
             }
 
             /**
-             * Make sure Zarinpal is in the gateways list
+             * Make sure Zarinpal is in the gateways list.
              *
              * @since 1.0
              */
-            static function pmpro_gateways($gateways) {
+            public static function pmpro_gateways($gateways)
+            {
                 if (empty($gateways['zarinpal'])) {
                     $gateways['zarinpal'] = 'زرین‌پال';
                 }
+
                 return $gateways;
             }
 
@@ -59,11 +63,11 @@ function load_zarinpal_pmpro_class() {
              *
              * @since 1.0
              */
-            static function getGatewayOptions() {
-
-                $options = array(
-                    'zarinpal_merchantid'
-                );
+            public static function getGatewayOptions()
+            {
+                $options = [
+                    'zarinpal_merchantid',
+                ];
 
                 return $options;
             }
@@ -73,9 +77,10 @@ function load_zarinpal_pmpro_class() {
              *
              * @since 1.0
              */
-            static function pmpro_payment_options($options) {
+            public static function pmpro_payment_options($options)
+            {
                 //get zarinpal options
-                $zarinpal_options = PMProGateway_Zarinpal::getGatewayOptions();
+                $zarinpal_options = self::getGatewayOptions();
 
                 //merge with others.
                 $options = array_merge($zarinpal_options, $options);
@@ -84,11 +89,12 @@ function load_zarinpal_pmpro_class() {
             }
 
             /**
-             * Remove required billing fields
+             * Remove required billing fields.
              *
              * @since 1.8
              */
-            static function pmpro_required_billing_fields($fields) {
+            public static function pmpro_required_billing_fields($fields)
+            {
                 unset($fields['bfirstname']);
                 unset($fields['blastname']);
                 unset($fields['baddress1']);
@@ -112,23 +118,33 @@ function load_zarinpal_pmpro_class() {
              *
              * @since 1.0
              */
-            static function pmpro_payment_option_fields($values, $gateway) {
+            public static function pmpro_payment_option_fields($values, $gateway)
+            {
                 ?>
-                <tr class="pmpro_settings_divider gateway gateway_zarinpal" <?php if ($gateway != "zarinpal") { ?>style="display: none;"<?php } ?>>
+                <tr class="pmpro_settings_divider gateway gateway_zarinpal" <?php if ($gateway != 'zarinpal') {
+                    ?>style="display: none;"<?php 
+                }
+                ?>>
                 <td colspan="2">
-                    <?php echo 'تنظیمات زرین‌پال'; ?>
+                    <?php echo 'تنظیمات زرین‌پال';
+                ?>
                 </td>
                 </tr>
-                <tr class="gateway gateway_zarinpal" <?php if ($gateway != "zarinpal") { ?>style="display: none;"<?php } ?>>
+                <tr class="gateway gateway_zarinpal" <?php if ($gateway != 'zarinpal') {
+                    ?>style="display: none;"<?php 
+                }
+                ?>>
                 <th scope="row" valign="top">
                 <label for="zarinpal_merchantid">کد مرچنت جهت اتصال به زرین‌پال:</label>
                 </th>
                 <td>
-                    <input type="text" id="zarinpal_merchantid" name="zarinpal_merchantid" size="60" value="<?php echo esc_attr($values['zarinpal_merchantid']); ?>" />
+                    <input type="text" id="zarinpal_merchantid" name="zarinpal_merchantid" size="60" value="<?php echo esc_attr($values['zarinpal_merchantid']);
+                ?>" />
                 </td>
                 </tr>
 
                 <?php
+
             }
 
             /**
@@ -136,7 +152,8 @@ function load_zarinpal_pmpro_class() {
              *
              * @since 1.8
              */
-            static function pmpro_checkout_before_change_membership_level($user_id, $morder) {
+            public static function pmpro_checkout_before_change_membership_level($user_id, $morder)
+            {
                 global $wpdb, $discount_code_id;
 
                 //if no order, no need to pay
@@ -149,7 +166,7 @@ function load_zarinpal_pmpro_class() {
 
                 //save discount code use
                 if (!empty($discount_code_id)) {
-                    $wpdb->query("INSERT INTO $wpdb->pmpro_discount_codes_uses (code_id, user_id, order_id, timestamp) VALUES('" . $discount_code_id . "', '" . $user_id . "', '" . $morder->id . "', now())");
+                    $wpdb->query("INSERT INTO $wpdb->pmpro_discount_codes_uses (code_id, user_id, order_id, timestamp) VALUES('".$discount_code_id."', '".$user_id."', '".$morder->id."', now())");
                 }
 
                 //$morder->Gateway->sendToTwocheckout($morder);
@@ -166,7 +183,7 @@ function load_zarinpal_pmpro_class() {
                 }
 
                 $order_id = $morder->code;
-                $redirect = admin_url("admin-ajax.php") . "?action=zarinpal-ins&oid=$order_id";
+                $redirect = admin_url('admin-ajax.php')."?action=zarinpal-ins&oid=$order_id";
 
 
                 global $pmpro_currency;
@@ -177,17 +194,17 @@ function load_zarinpal_pmpro_class() {
                 }
 
 
-                $client = new SoapClient($url, array('encoding' => 'UTF-8'));
+                $client = new SoapClient($url, ['encoding' => 'UTF-8']);
 
                 $result = $client->PaymentRequest(
-                        array(
-                            'MerchantID' => $api,
-                            'Amount' => $amount,
+                        [
+                            'MerchantID'  => $api,
+                            'Amount'      => $amount,
                             'Description' => $order_id,
-                            'Email' => '',
-                            'Mobile' => '',
+                            'Email'       => '',
+                            'Mobile'      => '',
                             'CallbackURL' => $redirect,
-                        )
+                        ]
                 );
 
 
@@ -195,23 +212,24 @@ function load_zarinpal_pmpro_class() {
 
                 if ($result->Status == 100) {
                     if ($gtw_env == '' || $gtw_env == 'sandbox') {
-                        $go = "https://sandbox.zarinpal.com/pg/StartPay/" . $result->Authority;
+                        $go = 'https://sandbox.zarinpal.com/pg/StartPay/'.$result->Authority;
                     } else {
-                        $go = "https://www.zarinpal.com/pg/StartPay/" . $result->Authority;
+                        $go = 'https://www.zarinpal.com/pg/StartPay/'.$result->Authority;
                     }
 
                     header("Location: {$go}");
                     die();
                 } else {
-                    $Err = "خطا در ارسال اطلاعات به زرین پال کد خطا :  " . $result->Status;
-                    $morder->status = "cancelled";
+                    $Err = 'خطا در ارسال اطلاعات به زرین پال کد خطا :  '.$result->Status;
+                    $morder->status = 'cancelled';
                     $morder->notes = $Err;
                     $morder->saveOrder();
                     die($Err);
                 }
             }
 
-            static function pmpro_wp_ajax_zarinpal_ins() {
+            public static function pmpro_wp_ajax_zarinpal_ins()
+            {
                 global $gateway_environment;
                 if (!isset($_GET['oid']) || is_null($_GET['oid'])) {
                     die('meghdare oid dar dargahe zarinpal elzamist');
@@ -243,47 +261,48 @@ function load_zarinpal_pmpro_class() {
                     $api = pmpro_getOption('zarinpal_merchantid');
                     $url = 'https://www.zarinpal.com/pg/services/WebGate/wsdl';
                 }
-                
+
                 $Authority = $_GET['Authority'];
-				$Amount = intval($morder->subtotal);
+                $Amount = intval($morder->subtotal);
                 if ($pmpro_currency == 'IRR') {
                     $Amount /= 10;
                 }
-				
-                $client = new SoapClient($url, array('encoding' => 'UTF-8'));
+
+                $client = new SoapClient($url, ['encoding' => 'UTF-8']);
 
                 $result = $client->PaymentVerification(
-                        array(
+                        [
                             'MerchantID' => $api,
-                            'Authority' => $Authority,
-                            'Amount' => $Amount,
-                        )
+                            'Authority'  => $Authority,
+                            'Amount'     => $Amount,
+                        ]
                 );
 
                 if ($result->Status == 100) {
                     if (self::do_level_up($morder, $trans_id)) {
-                        header('Location:' . pmpro_url("confirmation", "?level=" . $morder->membership_level->id));
+                        header('Location:'.pmpro_url('confirmation', '?level='.$morder->membership_level->id));
                     }
                 } else {
-                    $Err = "خطا در ارسال اطلاعات به زرین پال کد خطا :  " . $result->Status;
-                    $morder->status = "cancelled";
+                    $Err = 'خطا در ارسال اطلاعات به زرین پال کد خطا :  '.$result->Status;
+                    $morder->status = 'cancelled';
                     $morder->notes = $Err;
                     $morder->saveOrder();
-                    header("Location: " . pmpro_url());
+                    header('Location: '.pmpro_url());
                     die($Err);
                 }
             }
 
-            static function do_level_up(&$morder, $txn_id) {
+            public static function do_level_up(&$morder, $txn_id)
+            {
                 global $wpdb;
                 //filter for level
-                $morder->membership_level = apply_filters("pmpro_inshandler_level", $morder->membership_level, $morder->user_id);
+                $morder->membership_level = apply_filters('pmpro_inshandler_level', $morder->membership_level, $morder->user_id);
 
                 //fix expiration date
                 if (!empty($morder->membership_level->expiration_number)) {
-                    $enddate = "'" . date("Y-m-d", strtotime("+ " . $morder->membership_level->expiration_number . " " . $morder->membership_level->expiration_period, current_time("timestamp"))) . "'";
+                    $enddate = "'".date('Y-m-d', strtotime('+ '.$morder->membership_level->expiration_number.' '.$morder->membership_level->expiration_period, current_time('timestamp')))."'";
                 } else {
-                    $enddate = "NULL";
+                    $enddate = 'NULL';
                 }
 
                 //get discount code
@@ -293,26 +312,26 @@ function load_zarinpal_pmpro_class() {
                     $morder->getMembershipLevel(true);
                     $discount_code_id = $morder->discount_code->id;
                 } else {
-                    $discount_code_id = "";
+                    $discount_code_id = '';
                 }
 
                 //set the start date to current_time('mysql') but allow filters
-                $startdate = apply_filters("pmpro_checkout_start_date", "'" . current_time('mysql') . "'", $morder->user_id, $morder->membership_level);
+                $startdate = apply_filters('pmpro_checkout_start_date', "'".current_time('mysql')."'", $morder->user_id, $morder->membership_level);
 
                 //custom level to change user to
-                $custom_level = array(
-                    'user_id' => $morder->user_id,
-                    'membership_id' => $morder->membership_level->id,
-                    'code_id' => $discount_code_id,
+                $custom_level = [
+                    'user_id'         => $morder->user_id,
+                    'membership_id'   => $morder->membership_level->id,
+                    'code_id'         => $discount_code_id,
                     'initial_payment' => $morder->membership_level->initial_payment,
-                    'billing_amount' => $morder->membership_level->billing_amount,
-                    'cycle_number' => $morder->membership_level->cycle_number,
-                    'cycle_period' => $morder->membership_level->cycle_period,
-                    'billing_limit' => $morder->membership_level->billing_limit,
-                    'trial_amount' => $morder->membership_level->trial_amount,
-                    'trial_limit' => $morder->membership_level->trial_limit,
-                    'startdate' => $startdate,
-                    'enddate' => $enddate);
+                    'billing_amount'  => $morder->membership_level->billing_amount,
+                    'cycle_number'    => $morder->membership_level->cycle_number,
+                    'cycle_period'    => $morder->membership_level->cycle_period,
+                    'billing_limit'   => $morder->membership_level->billing_limit,
+                    'trial_amount'    => $morder->membership_level->trial_amount,
+                    'trial_limit'     => $morder->membership_level->trial_limit,
+                    'startdate'       => $startdate,
+                    'enddate'         => $enddate, ];
 
                 global $pmpro_error;
                 if (!empty($pmpro_error)) {
@@ -322,7 +341,7 @@ function load_zarinpal_pmpro_class() {
 
                 if (pmpro_changeMembershipLevel($custom_level, $morder->user_id) !== false) {
                     //update order status and transaction ids
-                    $morder->status = "success";
+                    $morder->status = 'success';
                     $morder->payment_transaction_id = $txn_id;
                     //if( $recurring )
                     //    $morder->subscription_transaction_id = $txn_id;
@@ -332,31 +351,31 @@ function load_zarinpal_pmpro_class() {
 
                     //add discount code use
                     if (!empty($discount_code) && !empty($use_discount_code)) {
-                        $wpdb->query("INSERT INTO $wpdb->pmpro_discount_codes_uses (code_id, user_id, order_id, timestamp) VALUES('" . $discount_code_id . "', '" . $morder->user_id . "', '" . $morder->id . "', '" . current_time('mysql') . "')");
+                        $wpdb->query("INSERT INTO $wpdb->pmpro_discount_codes_uses (code_id, user_id, order_id, timestamp) VALUES('".$discount_code_id."', '".$morder->user_id."', '".$morder->id."', '".current_time('mysql')."')");
                     }
 
                     //save first and last name fields
                     if (!empty($_POST['first_name'])) {
-                        $old_firstname = get_user_meta($morder->user_id, "first_name", true);
+                        $old_firstname = get_user_meta($morder->user_id, 'first_name', true);
                         if (!empty($old_firstname)) {
-                            update_user_meta($morder->user_id, "first_name", $_POST['first_name']);
+                            update_user_meta($morder->user_id, 'first_name', $_POST['first_name']);
                         }
                     }
                     if (!empty($_POST['last_name'])) {
-                        $old_lastname = get_user_meta($morder->user_id, "last_name", true);
+                        $old_lastname = get_user_meta($morder->user_id, 'last_name', true);
                         if (!empty($old_lastname)) {
-                            update_user_meta($morder->user_id, "last_name", $_POST['last_name']);
+                            update_user_meta($morder->user_id, 'last_name', $_POST['last_name']);
                         }
                     }
 
                     //hook
-                    do_action("pmpro_after_checkout", $morder->user_id);
+                    do_action('pmpro_after_checkout', $morder->user_id);
 
                     //setup some values for the emails
                     if (!empty($morder)) {
                         $invoice = new MemberOrder($morder->id);
                     } else {
-                        $invoice = NULL;
+                        $invoice = null;
                     }
 
                     //inslog("CHANGEMEMBERSHIPLEVEL: ORDER: " . var_export($morder, true) . "\n---\n");
@@ -380,8 +399,6 @@ function load_zarinpal_pmpro_class() {
                     return false;
                 }
             }
-
         }
-
     }
 }
